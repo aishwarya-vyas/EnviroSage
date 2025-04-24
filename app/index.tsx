@@ -1,5 +1,4 @@
 import { Redirect } from "expo-router";
+import AuthCheck from './auth-check';
 
-export default function Index() {
-  return <Redirect href={'/login'}/>
-}
+export default AuthCheck;

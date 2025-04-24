@@ -7,10 +7,10 @@ export default function _layout() {
     <Tabs screenOptions={{
         headerShown: false,
       }}>
-        <Tabs.Screen name="tracking" options={{
+        {/* <Tabs.Screen name="tracking" options={{
             tabBarLabel: 'Dashboard',
             tabBarIcon: ({color})=><Ionicons name="home" size={24} color={color} />
-        }}/>
+        }}/> */}
         {/* <Tabs.Screen name="bins" options={{                    
             tabBarLabel: 'Bin Details',
             tabBarIcon: ({color})=><Ionicons name="trash-bin-outline" size={24} color={color} />

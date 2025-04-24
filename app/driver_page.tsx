@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { auth } from '@/config';
 import { signOut } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DriverPage = () => {
   const router = useRouter();
@@ -10,12 +11,12 @@ const DriverPage = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      await AsyncStorage.removeItem("user"); // ← THIS LINE IS ESSENTIAL
       router.replace('/login'); // Redirect to login after logout
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Driver User Logged In</Text>

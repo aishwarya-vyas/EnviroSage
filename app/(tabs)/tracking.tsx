@@ -14,7 +14,6 @@ interface Bin {
   id: number;
   name: string;
   fullness: number;
-  timeLeft: string;
   location: string;
   latitude: string;
   longitude: string;
@@ -49,7 +48,6 @@ const Tracking = () => {
         id: Number(doc.data().id), // Convert 'id' from string to number
         name: doc.data().name,      // Assuming 'name' is directly available
         fullness: doc.data().fullness, // Ensure correct data type (e.g., number)
-        timeLeft: doc.data().timeLeft, // Assuming this is a string (time left)
         location:doc.data().location,
         latitude: doc.data().latitude,  // Extract latitude
         longitude: doc.data().longitude, // Extract longitude
@@ -93,22 +91,31 @@ const Tracking = () => {
     setSelectedBin(null);
   };
 
-  const handleSeeMore = () => {
-    closeModal(); // Ensure modal is closed first
-    const i = selectedBin.id;
-    if(i==1){
-      router.push("/bin1");
-    }
-    else if(i==2){
-      router.push("/bin2");
-    }
-    else{
-      router.push("/bin3");
-    }// Then navigate to the Bins page
-  };
-  
-  
+  // const handleSeeMore = () => {
+  //   closeModal(); // Ensure modal is closed first
+  //   const i = selectedBin.id;
+  //   if(i==1){
+  //     router.push("/bin1");
+  //   }
+  //   else if(i==2){
+  //     router.push("/bin2");
+  //   }
+  //   else{
+  //     router.push("/bin3");
+  //   }// Then navigate to the Bins page
+  // };
 
+  // In Tracking.tsx, modify the handleSeeMore function:
+const handleSeeMore = () => {
+  closeModal();
+  if (selectedBin) {
+    router.push({
+      pathname: "/bin/[id]",
+      params: { id: selectedBin.id.toString() }
+    });
+  }
+};
+  
   useEffect(() => {
     const checkSession = async () => {
       const user = await AsyncStorage.getItem('user');
@@ -208,10 +215,6 @@ const Tracking = () => {
                 <View style={styles.modalRow}>
                   <FontAwesome name="circle" size={18} color="gray" />
                   <Text style={styles.modalText}>Fullness: {Math.round(selectedBin.fullness * 100)}%</Text>
-                </View>
-                <View style={styles.modalRow}>
-                  <FontAwesome name="clock-o" size={18} color="gray" />
-                  <Text style={styles.modalText}>Time Left: {selectedBin.timeLeft}</Text>
                 </View>
                 <View style={styles.modalRow}>
                   <FontAwesome name="map-marker" size={18} color="gray" />
