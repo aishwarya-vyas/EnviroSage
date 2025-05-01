@@ -118,7 +118,7 @@ const LoginPage = () => {
         <FontAwesome name="user" size={20} color="#fff" />
         <TextInput
           style={styles.input}
-          placeholder="Email ID or Employee ID"
+          placeholder="Email ID"
           placeholderTextColor="#888"
           value={identifier}
           onChangeText={setIdentifier}

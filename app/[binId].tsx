@@ -12,8 +12,7 @@ const screenWidth = Dimensions.get("window").width;
 
 const BinDetails = () => {
   const router = useRouter();
-  const { binId } = useLocalSearchParams();  // Accessing binId from the route query
-
+  const { binId } = useLocalSearchParams();  
   const [binData, setBinData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [business, setBusiness] = useState(null)
@@ -27,7 +26,7 @@ const BinDetails = () => {
         return;
       }
       console.log("Fetching data for binId:", binId);  
-      const docRef = doc(db, 'bins', binId); // Ensure binId is a string
+      const docRef = doc(db, 'bins', binId); 
       console.log(docRef);
       const docSnap = await getDoc(docRef);
       console.log(docSnap);
@@ -109,7 +108,7 @@ const BinDetails = () => {
         </View>
       </View>
 
-      {/* Historical Trend Graph (assuming you have the data) */}
+      
       <LineChart
         data={{
           labels: ["D1", "D2", "D3", "D4", "D5", "D6", "Today"],
@@ -135,7 +134,6 @@ const BinDetails = () => {
         style={styles.chart}
       />
 
-      {/* Button to mark as emptied or report an issue */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={() => alert("Bin marked as emptied")}>
           <Text style={styles.buttonText}>Mark as Emptied</Text>

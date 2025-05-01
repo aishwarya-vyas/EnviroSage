@@ -34,32 +34,23 @@ const Tracking = () => {
     try {
       setIsLoading(true);
 
-      // Fetch the collection of bins from Firestore 
       const binsCollectionRef = collection(db, 'bins');
       const binsSnapshot = await getDocs(binsCollectionRef);
 
-      // // Log all bins to the terminal (without modifying the state)
-      // binsSnapshot.docs.forEach((doc) => {
-      //   console.log('Bin data:', doc.data());
-      // });
-
-      // Map the fetched Firestore data into the Bin interface structure
       const binsList: Bin[] = binsSnapshot.docs.map((doc) => ({
-        id: Number(doc.data().id), // Convert 'id' from string to number
-        name: doc.data().name,      // Assuming 'name' is directly available
-        fullness: doc.data().fullness, // Ensure correct data type (e.g., number)
+        id: Number(doc.data().id), 
+        name: doc.data().name,     
+        fullness: doc.data().fullness, 
         location:doc.data().location,
-        latitude: doc.data().latitude,  // Extract latitude
-        longitude: doc.data().longitude, // Extract longitude
-
-        lastCollectionTime: doc.data().lastCollectionTime, // Extract last collection time
-        predictedFillTime: doc.data().predictedFillTime, // Extract predicted fill time
+        latitude: doc.data().latitude,  
+        longitude: doc.data().longitude,
+        lastCollectionTime: doc.data().lastCollectionTime,
+        predictedFillTime: doc.data().predictedFillTime, 
       }));
 
-      // Sort the bins based on 'id' for better organization
+      
       binsList.sort((a, b) => a.id - b.id);
 
-      // Update the bins state with the fetched and mapped data
       setBins(binsList);
       setIsLoading(false);
 
@@ -85,27 +76,13 @@ const Tracking = () => {
     setSelectedBin(bin);
     setIsModalVisible(true);
   };
-// 
+ 
   const closeModal = () => {
     setIsModalVisible(false);
     setSelectedBin(null);
   };
 
-  // const handleSeeMore = () => {
-  //   closeModal(); // Ensure modal is closed first
-  //   const i = selectedBin.id;
-  //   if(i==1){
-  //     router.push("/bin1");
-  //   }
-  //   else if(i==2){
-  //     router.push("/bin2");
-  //   }
-  //   else{
-  //     router.push("/bin3");
-  //   }// Then navigate to the Bins page
-  // };
 
-  // In Tracking.tsx, modify the handleSeeMore function:
 const handleSeeMore = () => {
   closeModal();
   if (selectedBin) {
@@ -205,7 +182,6 @@ const handleSeeMore = () => {
         ))}
       </MapView>
 
-      {/* Modal for Bin Details */}
       <Modal animationType="slide" transparent={true} visible={isModalVisible} onRequestClose={closeModal}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
