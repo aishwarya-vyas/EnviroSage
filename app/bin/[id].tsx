@@ -35,7 +35,7 @@ const BinDetails = () => {
         const fetchBinData = async () => {
             try {
                 setLoading(true);
-                const q = query(collection(db, "bins"), where("id", "==", id.toString()));
+                const q = query(collection(db, "prediction"), where("id", "==", id.toString()));
                 const querySnapshot = await getDocs(q);
                 
                 if (!querySnapshot.empty) {

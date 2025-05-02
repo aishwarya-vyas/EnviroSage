@@ -12,16 +12,17 @@ import { useNavigation } from "@react-navigation/native"; // for React Navigatio
 
 interface Bin {
   id: number;
-  name: string;
-  fullness: number;
-  location: string;
+  actualFullness: number;
+  predictedFullness: number;
   latitude: string;
   longitude: string;
-  predictedFillTime: string;
-  lastCollectionTime: string; 
+  date: string;
+  priority: number;
+  location: string;
 }
 
-const Tracking = () => {
+
+const Track = () => {
   const [searchId, setSearchId] = useState('');
   const [selectedBin, setSelectedBin] = useState<Bin | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -34,26 +35,24 @@ const Tracking = () => {
     try {
       setIsLoading(true);
 
-      const binsCollectionRef = collection(db, 'bins');
+      const binsCollectionRef = collection(db, 'prediction');
       const binsSnapshot = await getDocs(binsCollectionRef);
 
       const binsList: Bin[] = binsSnapshot.docs.map((doc) => ({
-        id: Number(doc.data().id), 
-        name: doc.data().name,     
-        fullness: doc.data().fullness, 
-        location:doc.data().location,
-        latitude: doc.data().latitude,  
+        id: Number(doc.data().id),
+        actualFullness: doc.data().actualFullness,
+        predictedFullness: doc.data().predictedFullness,
+        latitude: doc.data().latitude,
         longitude: doc.data().longitude,
-        lastCollectionTime: doc.data().lastCollectionTime,
-        predictedFillTime: doc.data().predictedFillTime, 
+        date: doc.data().date,
+        priority: doc.data().priority,
+        location: doc.data().location
       }));
 
-      
-      binsList.sort((a, b) => a.id - b.id);
+      binsList.sort((a, b) => b.priority - a.priority);
 
       setBins(binsList);
       setIsLoading(false);
-
     } catch (error) {
       console.error('Error fetching bins:', error);
       setIsLoading(false);
@@ -66,33 +65,34 @@ const Tracking = () => {
 
   const filteredBins = bins.filter(bin => bin.id.toString().includes(searchId));
 
-  const getStatusColor = (fullness: number) => {
-    if (fullness < 0.4) return 'green';
-    if (fullness >= 0.4 && fullness < 0.6) return 'yellow';
-    return 'red';
+  const getStatusColor = (actualFullness: number) => {
+    if (actualFullness === 0 || actualFullness < 4) return 'green';
+    if (actualFullness >= 4 && actualFullness <= 7) return 'yellow';
+    if (actualFullness > 7) return 'red';
+    return 'pink'; // fallback color if somehow undefined
   };
 
   const handleBinClick = (bin: Bin) => {
     setSelectedBin(bin);
     setIsModalVisible(true);
   };
- 
+
   const closeModal = () => {
     setIsModalVisible(false);
     setSelectedBin(null);
   };
 
 
-const handleSeeMore = () => {
-  closeModal();
-  if (selectedBin) {
-    router.push({
-      pathname: "/bin/[id]",
-      params: { id: selectedBin.id.toString() }
-    });
-  }
-};
-  
+  const handleSeeMore = () => {
+    closeModal();
+    if (selectedBin) {
+      router.push({
+        pathname: "/bin/[id]",
+        params: { id: selectedBin.id.toString() }
+      });
+    }
+  };
+
   useEffect(() => {
     const checkSession = async () => {
       const user = await AsyncStorage.getItem('user');
@@ -142,16 +142,20 @@ const handleSeeMore = () => {
             <View style={styles.binContainer}>
               <View style={styles.binInfo}>
                 <FontAwesome name="trash" size={30} />
-                <Text style={styles.binName}>{item.name}</Text>
+                <Text style={styles.binName}>Bin {item.id}</Text>
               </View>
               <View
                 style={[
                   styles.statusLine,
-                  { backgroundColor: getStatusColor(item.fullness), width: `${item.fullness * 100}%` },
+                  {
+                    backgroundColor: getStatusColor(item.actualFullness),
+                    width: item.actualFullness === 0 ? 10 : `${item.actualFullness * 10}%`,
+                  },
                 ]}
               />
               <View style={styles.predictedContainer}>
-                <Text style={styles.predictedText}>Predicted Fill Time: {item.predictedFillTime}</Text>
+                <Text style={styles.predictedText}>Actual Fullness: {item.actualFullness * 10}%</Text>
+                <Text style={styles.predictedText}>Predictions for Tomorrow: {item.predictedFullness * 10}%</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -162,10 +166,10 @@ const handleSeeMore = () => {
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: 19.0760,
-          longitude: 72.8777,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitude: -37.8995,
+          longitude: 144.65,
+          latitudeDelta: 0.5,
+          longitudeDelta: 0.5,
         }}
       >
         {bins.map((bin) => (
@@ -173,11 +177,11 @@ const handleSeeMore = () => {
             key={bin.id}
             coordinate={{
               latitude: Number(bin.latitude),
-              longitude:  Number(bin.longitude),
+              longitude: Number(bin.longitude),
             }}
-            title={bin.name}
-            description={`Status: ${getStatusColor(bin.fullness)}`}
-            pinColor={getStatusColor(bin.fullness)}
+            title={`Bin ${bin.id}`}
+            description={`Status: ${getStatusColor(bin.actualFullness)}`}
+            pinColor={getStatusColor(bin.actualFullness)}
           />
         ))}
       </MapView>
@@ -187,24 +191,27 @@ const handleSeeMore = () => {
           <View style={styles.modalContainer}>
             {selectedBin && (
               <>
-                <Text style={styles.modalTitle}>{selectedBin.name}</Text>
-                <View style={styles.modalRow}>
+                <Text style={styles.modalTitle}>Bin {selectedBin.id}</Text>
+                {/* <View style={styles.modalRow}>
                   <FontAwesome name="circle" size={18} color="gray" />
-                  <Text style={styles.modalText}>Fullness: {Math.round(selectedBin.fullness * 100)}%</Text>
+                  <Text style={styles.modalText}>Fullness: {Math.round(selectedBin.actualFullness * 100)}%</Text>
+                </View> */}
+                <View style={styles.modalRow}>
+                  <FontAwesome name="exclamation-circle" size={18} color="gray" />
+                  <Text style={styles.modalText}>Priority: {selectedBin.priority}</Text>
                 </View>
                 <View style={styles.modalRow}>
                   <FontAwesome name="map-marker" size={18} color="gray" />
-                  <Text style={styles.modalText}>Location: {selectedBin.location}</Text>
+                  <Text style={styles.modalText}>Location: {selectedBin.location} </Text>
                 </View>
                 <View style={styles.modalRow}>
                   <FontAwesome name="calendar" size={18} color="gray" />
-                  <Text style={styles.modalText}>Last Collected: {selectedBin.lastCollectionTime}</Text>
+                  <Text style={styles.modalText}>Date: {selectedBin.date}</Text>
                 </View>
-
                 {/* See More Button */}
-                <TouchableOpacity style={styles.seeMoreButton} onPress={handleSeeMore}>
+                {/* <TouchableOpacity style={styles.seeMoreButton} onPress={handleSeeMore}>
                   <Text style={styles.seeMoreButtonText}>See More</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
                   <Text style={styles.closeButtonText}>Close</Text>
@@ -335,4 +342,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Tracking;
+export default Track;
